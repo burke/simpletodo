@@ -91,6 +91,9 @@ var SimpleTodo = SimpleTodo || {};
     hideCompleted: function() {
       $("li.completed").remove();
       lib.LocalStore.removeAllCompleted();
+      if (! this.active.data("item")) { // The associated data element has been deleted.
+        this.setActive($("li:first"));
+      }
     },
 
     completeSelected: function() {
