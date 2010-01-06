@@ -1,0 +1,22 @@
+li {
+   margin-bottom: 5px;
+}
+
+span {
+   border: 2px solid transparent;
+   -webkit-border-radius: 5px;
+}
+
+li.active span {
+   background: #9f9;
+   border-color: #9f9;
+}
+
+li:hover span {
+   background: #cdf;
+   border-color: #cdf;
+}
+
+li.completed span {
+   color: #999;
+}
