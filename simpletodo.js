@@ -1,6 +1,8 @@
-var SimpleTodo = {
+var SimpleTodo = SimpleTodo || {};
 
-  Item: function (text) {
+(function(lib){
+
+  lib.Item = function (text) {
     this.text = text;
     this.completed = false;
     this.uuid = (function() {
@@ -16,46 +18,46 @@ var SimpleTodo = {
       var uuid = s.join("");
       return uuid;
     })();
-  },
+  };
 
-  KeyEvents: {
+  lib.KeyEvents = {
 
-    do_enter: function() {
-      SimpleTodo.DisplayManager.addListInput();
+    doEnter: function() {
+      lib.DisplayManager.addListInput();
     },
 
-    do_down: function() {
-      SimpleTodo.DisplayManager.selectNext();
+    doDown: function() {
+      lib.DisplayManager.selectNext();
     },
 
-    do_up: function() {
-      SimpleTodo.DisplayManager.selectPrevious();
+    doUp: function() {
+      lib.DisplayManager.selectPrevious();
     },
 
-    do_move_down: function() {
-      SimpleTodo.DisplayManager.moveSelectedDown();
+    doMoveDown: function() {
+      lib.DisplayManager.moveSelectedDown();
     },
 
-    do_move_up: function() {
-      SimpleTodo.DisplayManager.moveSelectedUp();
+    doMoveUp: function() {
+      lib.DisplayManager.moveSelectedUp();
     },
 
-    do_space: function() {
-      SimpleTodo.DisplayManager.completeSelected();
+    doSpace: function() {
+      lib.DisplayManager.completeSelected();
     },
 
-    do_backtick: function() {
-      SimpleTodo.DisplayManager.hideCompleted();
+    doBacktick: function() {
+      lib.DisplayManager.hideCompleted();
     },
 
     bindings: {
-      13:  "do_enter",
-      106: "do_down",
-      107: "do_up",
-      108: "do_move_down",
-      104: "do_move_up",
-      32:  "do_space",
-      96:  "do_backtick"
+      13:  "doEnter",
+      106: "doDown",
+      107: "doUp",
+      108: "doMoveDown",
+      104: "doMoveUp",
+      32:  "doSpace",
+      96:  "doBacktick"
     },
 
     initialize: function() {
@@ -63,14 +65,14 @@ var SimpleTodo = {
       $(document).bind("keypress", function(e) {
         //alert(e.which);
         if (document.activeElement == document.body) {
-          eval("SimpleTodo.KeyEvents."+that.bindings[e.which]+"();");
+          eval("lib.KeyEvents."+that.bindings[e.which]+"();");
         }
       });
     }
 
-  },
+  };
 
-  DisplayManager: {
+  lib.DisplayManager = {
     addListItem: function(item) {
       $(document.createElement("li")).
         html("<span>"+item.text+"</span>").
@@ -88,16 +90,19 @@ var SimpleTodo = {
 
     hideCompleted: function() {
       $("li.completed").remove();
-      SimpleTodo.LocalStore.removeAllCompleted();
+      lib.LocalStore.removeAllCompleted();
     },
 
     completeSelected: function() {
       this.active.toggleClass("completed");
       this.active.data("item").completed = !this.active.data("item").completed;
-      SimpleTodo.LocalStore.save();
+      lib.LocalStore.save();
     },
 
     selectPrevious: function() {
+      if (! this.active) {
+        this.setActive($("li:first"));
+      }
       var x = this.active.prev("li");
       if (x.size()>0) {
         this.setActive(x);
@@ -105,6 +110,9 @@ var SimpleTodo = {
     },
 
     selectNext: function() {
+      if (! this.active) {
+        this.setActive($("li:first"));
+      }
       var x = this.active.next("li");
       if (x.size()>0) {
         this.setActive(x);
@@ -127,13 +135,15 @@ var SimpleTodo = {
 
     setActive: function(el) {
       if(this.active) { this.active.removeClass("active"); }
-      this.active = el;
-      this.active.addClass("active");
+      if (el[0]) {
+        this.active = el;
+        this.active.addClass("active");
+      }
     },
 
     initialize: function() {
       var that = this;
-      $.each(SimpleTodo.LocalStore.items, function(index, item) {
+      $.each(lib.LocalStore.items, function(index, item) {
         that.addListItem(item);
       });
 
@@ -141,19 +151,20 @@ var SimpleTodo = {
 
       $("form").live("submit", function(e) {
         var input = $(this).children("input").val();
-        var item = new SimpleTodo.Item(input);
+        var item = new lib.Item(input);
         $(this).parent().remove();
-        SimpleTodo.LocalStore.add(item);
+        lib.LocalStore.add(item);
         that.addListItem(item);
         e.preventDefault();
       });
+
     }
 
-  },
+  };
 
-  LocalStore: {
+  lib.LocalStore = {
 
-    storageKey: "SimpleTodo.items",
+    storageKey: "lib.items",
 
     fetch: function() {
       var jsonItems = localStorage.getItem(this.storageKey) || "[]";
@@ -182,15 +193,15 @@ var SimpleTodo = {
       this.fetch();
     }
 
-  },
+  };
 
-  initialize: function() {
+  lib.initialize = function() {
     this.KeyEvents.initialize();
     this.LocalStore.initialize();
     this.DisplayManager.initialize();
-  }
+  };
 
-};
+})(SimpleTodo);
 
 $(document).ready(function() {
   SimpleTodo.initialize();
